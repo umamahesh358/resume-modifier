@@ -6,6 +6,8 @@ import logging
 
 from scraper import scrape_jd_url
 from pdf_parser import parse_pdf_resume
+from ai_engine import analyze_ats_baseline, rewrite_resume, generate_cover_letter
+
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -61,6 +63,58 @@ async def upload_resume(file: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"Error parsing resume PDF: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/optimize-resume")
+async def optimize_resume(
+    jd_url: HttpUrl = Form(...),
+    resume_file: UploadFile = File(...)
+):
+    """
+    Orchestration endpoint:
+    1. Scrapes the JD URL.
+    2. Parses the uploaded Resume PDF.
+    3. Runs the AI Pipeline (Baseline Analysis -> Rewriting -> Cover Letter).
+    """
+    if resume_file.content_type != "application/pdf":
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+
+    try:
+        # 1. & 2. Ingestion
+        logger.info(f"Scraping JD from: {jd_url}")
+        jd_text = await scrape_jd_url(str(jd_url))
+
+        logger.info(f"Parsing resume: {resume_file.filename}")
+        resume_bytes = await resume_file.read()
+        old_resume_text = parse_pdf_resume(resume_bytes)
+
+        # 3. AI Pipeline
+        logger.info("Running Call 1: Baseline ATS Analyzer")
+        baseline_analysis = await analyze_ats_baseline(old_resume_text, jd_text)
+        old_ats_score = baseline_analysis.get("old_ats_score", 0)
+        missing_keywords = baseline_analysis.get("missing_keywords", [])
+
+        logger.info("Running Call 2: Resume Rewriter & Score Booster")
+        new_resume_json = await rewrite_resume(old_resume_text, jd_text, missing_keywords)
+
+        logger.info("Running Call 3: Cover Letter Generator")
+        cover_letter_json = await generate_cover_letter(new_resume_json, jd_text)
+
+        # Return the aggregated results (we will compile LaTeX in a future task)
+        return {
+            "status": "success",
+            "scores": {
+                "old_ats_score": old_ats_score,
+                "new_ats_score": new_resume_json.get("new_ats_score", 100),
+            },
+            "missing_keywords_found": missing_keywords,
+            "optimized_resume": new_resume_json,
+            "cover_letter": cover_letter_json.get("cover_letter_text", "")
+        }
+
+    except Exception as e:
+        logger.error(f"Error during optimization pipeline: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
