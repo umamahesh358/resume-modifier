@@ -7,6 +7,8 @@ import logging
 from scraper import scrape_jd_url
 from pdf_parser import parse_pdf_resume
 from ai_engine import analyze_ats_baseline, rewrite_resume, generate_cover_letter
+from latex_generator import generate_pdf
+
 
 
 # Setup logging
@@ -100,7 +102,18 @@ async def optimize_resume(
         logger.info("Running Call 3: Cover Letter Generator")
         cover_letter_json = await generate_cover_letter(new_resume_json, jd_text)
 
-        # Return the aggregated results (we will compile LaTeX in a future task)
+        logger.info("Running Call 4: Generating LaTeX PDFs")
+        resume_pdf_b64 = generate_pdf("resume.tex.j2", new_resume_json)
+
+        # Format data for cover letter template
+        cl_data = {
+            "cover_letter_text": cover_letter_json.get("cover_letter_text", ""),
+            "name": "Jane", # We would ideally extract this from the resume JSON
+            "surname": "Doe",
+        }
+        cover_letter_pdf_b64 = generate_pdf("cover_letter.tex.j2", cl_data)
+
+        # Return the aggregated results
         return {
             "status": "success",
             "scores": {
@@ -108,8 +121,8 @@ async def optimize_resume(
                 "new_ats_score": new_resume_json.get("new_ats_score", 100),
             },
             "missing_keywords_found": missing_keywords,
-            "optimized_resume": new_resume_json,
-            "cover_letter": cover_letter_json.get("cover_letter_text", "")
+            "resume_pdf": resume_pdf_b64,
+            "cover_letter_pdf": cover_letter_pdf_b64
         }
 
     except Exception as e:
