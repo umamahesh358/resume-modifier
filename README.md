@@ -6,7 +6,7 @@ An AI-powered tool that analyzes your current resume against a target job descri
 
 1.  **Python 3.10+**
 2.  **Node.js 18+**
-3.  **Gemini API Key** (Set as `GEMINI_API_KEY` in `backend/.env`)
+3.  **API Key**: You need EITHER a **Groq API Key** (Recommended for speed/free tier) OR a **Gemini API Key**.
 
 ## Installation
 
@@ -16,14 +16,25 @@ An AI-powered tool that analyzes your current resume against a target job descri
     `cd backend`
 2.  Install dependencies:
     `pip install -r requirements.txt`
-3.  Download the **Tectonic** binary for LaTeX compilation. You can download the latest standalone binary for your OS from the [Tectonic Releases](https://github.com/tectonic-typesetting/tectonic/releases) page. Place the extracted `tectonic` executable directly inside the `backend/` directory.
+3.  Set up your Environment Variables: Create a `.env` file in the `backend/` directory. You can use Groq (which uses `llama-3.3-70b-versatile` under the hood) or Gemini (`gemini-2.5-pro`):
+    ```env
+    GROQ_API_KEY=your_groq_api_key_here
+    # OR
+    GEMINI_API_KEY=your_gemini_api_key_here
+    ```
+4.  Install the **Tectonic** compiler:
+    Run the automated setup script to download and configure Tectonic for your OS:
+    ```bash
+    python setup_tectonic.py
+    ```
 
 ### Frontend Setup
 
 1.  Navigate to the frontend folder:
     `cd frontend`
 2.  Install dependencies:
-    `npm install`
+    `npm install --legacy-peer-deps`
+    *(Note: Using `--legacy-peer-deps` prevents strict peer dependency issues with Next.js 15 and React 19)*
 
 ## Running the Application
 

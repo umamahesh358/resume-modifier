@@ -22,7 +22,7 @@ env = Environment(
 def escape_latex(s: str) -> str:
     """Escapes special LaTeX characters in a string."""
     if not isinstance(s, str):
-        return s
+        return str(s)
 
     # Needs a specific order to avoid escaping escape characters
     s = s.replace('\\', r'\textbackslash{}')
@@ -42,9 +42,17 @@ def escape_latex(s: str) -> str:
     return s
 
 def clean_data_for_latex(data: dict) -> dict:
-    """Recursively escape LaTeX special characters in the dict."""
+    """Recursively escape LaTeX special characters in the dict, EXCEPT for URL fields."""
     cleaned = {}
+    if not data:
+        return cleaned
+
     for k, v in data.items():
+        # Do not escape characters if the key is a url
+        if isinstance(k, str) and k.endswith("_url"):
+            cleaned[k] = v
+            continue
+
         if isinstance(v, str):
             cleaned[k] = escape_latex(v)
         elif isinstance(v, list):
@@ -60,6 +68,9 @@ def generate_pdf(template_name: str, data: dict) -> str:
     Generates a PDF using Jinja2 and Tectonic.
     Returns the generated PDF as a base64 encoded string.
     """
+    if not data:
+        raise ValueError("No data provided for PDF generation")
+
     # Clean the data to prevent LaTeX injection/syntax errors
     clean_data = clean_data_for_latex(data)
 
@@ -76,13 +87,15 @@ def generate_pdf(template_name: str, data: dict) -> str:
             f.write(rendered_tex)
 
         # Run tectonic
-        tectonic_path = os.path.join(os.path.dirname(__file__), "tectonic")
+        backend_dir = os.path.dirname(__file__)
+        tectonic_path = os.path.join(backend_dir, "tectonic.exe" if os.name == 'nt' else "tectonic")
+
         if not os.path.exists(tectonic_path):
-            raise FileNotFoundError("Tectonic binary not found in backend directory.")
+            raise FileNotFoundError(f"Tectonic binary not found at {tectonic_path}. Please run setup_tectonic.py first.")
 
         try:
             # We use --outfmt pdf and point to the tex file
-            result = subprocess.run(
+            subprocess.run(
                 [tectonic_path, tex_path, "--outdir", temp_dir],
                 check=True,
                 capture_output=True,

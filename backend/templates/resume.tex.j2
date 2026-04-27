@@ -81,7 +81,12 @@
 %----------HEADING-----------------
 \begin{center}
     \textbf{\Huge \scshape \BLOCK{ if name }\VAR{name}\BLOCK{ else }Professional Candidate\BLOCK{ endif }} \\ \vspace{1pt}
-    \small \BLOCK{ if contact_info }\VAR{contact_info}\BLOCK{ else }123-456-7890 $|$ email@example.com $|$ LinkedIn\BLOCK{ endif }
+    \small
+    \BLOCK{ if phone }\VAR{phone}\BLOCK{ endif }
+    \BLOCK{ if email } $|$ \href{mailto:\VAR{email}}{\underline{\VAR{email}}}\BLOCK{ endif }
+    \BLOCK{ if linkedin_url } $|$ \href{\VAR{linkedin_url}}{\underline{LinkedIn}}\BLOCK{ endif }
+    \BLOCK{ if github_url } $|$ \href{\VAR{github_url}}{\underline{GitHub}}\BLOCK{ endif }
+    \BLOCK{ if portfolio_url } $|$ \href{\VAR{portfolio_url}}{\underline{Portfolio}}\BLOCK{ endif }
 \end{center}
 
 %-----------PROFESSIONAL SUMMARY-----------------

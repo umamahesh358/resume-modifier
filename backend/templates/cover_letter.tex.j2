@@ -1,8 +1,8 @@
 \documentclass[11pt,a4paper,sans]{moderncv}
 
 % moderncv themes
-\moderncvstyle{classic} % style options are 'casual' (default), 'classic', 'oldstyle' and 'banking'
-\moderncvcolor{blue}    % color options 'blue' (default), 'orange', 'green', 'red', 'purple', 'grey' and 'black'
+\moderncvstyle{classic}
+\moderncvcolor{blue}
 
 % character encoding
 \usepackage[utf8]{inputenc}
@@ -12,9 +12,10 @@
 
 % personal data
 \name{\BLOCK{ if name }\VAR{name}\BLOCK{ else }Professional\BLOCK{ endif }}{\BLOCK{ if surname }\VAR{surname}\BLOCK{ else }Candidate\BLOCK{ endif }}
-\address{\BLOCK{ if address }\VAR{address}\BLOCK{ else }City, State\BLOCK{ endif }}
-\phone[mobile]{\BLOCK{ if phone }\VAR{phone}\BLOCK{ else }123-456-7890\BLOCK{ endif }}
-\email{\BLOCK{ if email }\VAR{email}\BLOCK{ else }email@example.com\BLOCK{ endif }}
+\BLOCK{ if address }\address{\VAR{address}}\BLOCK{ endif }
+\BLOCK{ if phone }\phone[mobile]{\VAR{phone}}\BLOCK{ endif }
+\BLOCK{ if email }\email{\VAR{email}}\BLOCK{ endif }
+\BLOCK{ if linkedin_url }\extrainfo{\href{\VAR{linkedin_url}}{LinkedIn}}\BLOCK{ endif }
 
 \begin{document}
 

@@ -106,10 +106,18 @@ async def optimize_resume(
         resume_pdf_b64 = generate_pdf("resume.tex.j2", new_resume_json)
 
         # Format data for cover letter template
+        full_name = new_resume_json.get("name", "Professional Candidate")
+        name_parts = full_name.split()
+        first_name = name_parts[0] if name_parts else "Professional"
+        last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else "Candidate"
+
         cl_data = {
             "cover_letter_text": cover_letter_json.get("cover_letter_text", ""),
-            "name": "Jane", # We would ideally extract this from the resume JSON
-            "surname": "Doe",
+            "name": first_name,
+            "surname": last_name,
+            "email": new_resume_json.get("email", ""),
+            "phone": new_resume_json.get("phone", ""),
+            "linkedin_url": new_resume_json.get("linkedin_url", "")
         }
         cover_letter_pdf_b64 = generate_pdf("cover_letter.tex.j2", cl_data)
 
